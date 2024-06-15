@@ -8,23 +8,22 @@ public class TeleportPlayer : NetworkBehaviour
 {
 
     [ServerRpc]
-    public void TeleportPlayerServerRpc(Vector3 destination)
+    public void TeleportPlayerServerRpc(Vector3 destination, NetworkConnection conn = null)
     {
-        if (!IsServerInitialized)    
-            return;
+        //if (!IsServerInitialized)    
+            //return;
 
         transform.position = destination;
+
+        TeleportPlayerClientRpc(destination, conn);
     }
 
-    // Start is called before the first frame update
-    void Start()
+    [ObserversRpc]
+    public void TeleportPlayerClientRpc(Vector3 destination, NetworkConnection conn = null)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        if (IsOwner)
+        {
+            transform.position = destination;
+        }
     }
 }

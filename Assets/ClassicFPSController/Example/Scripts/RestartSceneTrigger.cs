@@ -21,6 +21,7 @@ public class RestartSceneTrigger : NetworkBehaviour
             {
                 Debug.Log("Teleport Player");
                 teleportPlayer.TeleportPlayerServerRpc(teleportDestination.position);
+                teleportPlayer.TeleportPlayerClientRpc(teleportDestination.position);
             }
         }
     }
