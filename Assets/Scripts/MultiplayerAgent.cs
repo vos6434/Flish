@@ -39,5 +39,11 @@ public class MultiplayerAgent : NetworkBehaviour
             positionIndex = 0;
 
         agent.SetDestination(positions[positionIndex].position);
+
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject player in players)
+        {
+            Debug.Log("Found player object for client: " + player.name);
+        }
     }
 }

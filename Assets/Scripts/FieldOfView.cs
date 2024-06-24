@@ -70,7 +70,7 @@ public class FieldOfView : NetworkBehaviour
                 {
                     canSeePlayer = true;
                     //Debug.Log("FOUND PLAYER");
-                    Debug.Log(playerRef.gameObject.name);
+                    Debug.Log("Following " + playerRef.gameObject.name);
                     // Set agent destination to player
                     agent.SetDestination(playerRef.transform.position);
                 }
