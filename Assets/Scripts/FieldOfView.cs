@@ -34,11 +34,23 @@ public class FieldOfView : NetworkBehaviour
         agent = GetComponent<NavMeshAgent>();
     }
 
+    //public override void OnStartClient()
+    public override void OnStartServer()
+    //public override void OnStartNetwork()
+    //public override void OnOwnershipServer(NetworkConnection prevOwner)
+    {
+        //base.OnOwnershipServer(prevOwner);
+        //if (base.Owner.IsLocalClient)
+        //playerRef = GameObject.FindWithTag("Player");
+        //playerRef = GameObject.FindGameObjectWithTag("Player");
+        StartCoroutine(FOVRoutine());
+    }
+
     public override void OnStartClient()
     {
-        //playerRef = GameObject.FindWithTag("Player");
-        playerRef = GameObject.FindGameObjectWithTag("Player");
-        StartCoroutine(FOVRoutine());
+        base.OnStartClient();
+        //playerRef = GameObject.FindGameObjectWithTag("Player");
+        this.enabled = false;
     }
 
 
@@ -51,6 +63,26 @@ public class FieldOfView : NetworkBehaviour
             yield return wait;
             FieldOfViewCheck();
         }
+    }
+
+    private void FindClosestPlayerToAgent()
+    {
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        Debug.Log("Number of players in scene: " + players.Length);
+        float shortestDistance = Mathf.Infinity;
+        GameObject closestPlayer = null;
+
+        foreach (GameObject player in players)
+        {
+            float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
+            if (distanceToPlayer < shortestDistance)
+            {
+                shortestDistance = distanceToPlayer;
+                closestPlayer = player;
+            }
+        }
+
+        playerRef = closestPlayer;
     }
 
     private void FieldOfViewCheck()
@@ -68,11 +100,12 @@ public class FieldOfView : NetworkBehaviour
 
                 if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
                 {
+                    FindClosestPlayerToAgent();
                     canSeePlayer = true;
                     //Debug.Log("FOUND PLAYER");
                     Debug.Log("Following " + playerRef.gameObject.name);
                     // Set agent destination to player
-                    agent.SetDestination(playerRef.transform.position);
+                    agent.SetDestination(playerRef.gameObject.transform.position);
                 }
                 else
                     canSeePlayer = false;
