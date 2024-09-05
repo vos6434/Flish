@@ -1,9 +1,10 @@
-﻿using System.Collections;
+﻿using Unity.Netcode;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     [SerializeField] private string yAxisInput = "Vertical";
     [SerializeField] private string xAxisInput = "Horizontal";
@@ -24,6 +25,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool autoJump = true;
     [SerializeField] private bool clampGroundSpeed = false;
     [SerializeField] private bool disableBunnyHopping = false;
+    [SerializeField] private GameObject _camera;
 
     private Rigidbody rb;
 
@@ -46,8 +48,21 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
     }
 
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            _camera.SetActive(false);
+        }
+        else
+        {
+            _camera.SetActive(true);
+            //Debug.Log("Disable Camera");
+        }
+    }
 
     private void Update() {
+        if (!IsOwner || !IsSpawned) return;
         MouseLook();
         GetMovementInput();
     }
