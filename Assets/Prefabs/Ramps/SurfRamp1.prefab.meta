@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a74a17c3e7f8a4a4fbf9da658f254078
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 184747
+  packageName: Classic FPS Controller
+  packageVersion: 1.0.1
+  assetPath: Assets/ClassicFPSController/Example/Prefabs/SurfRamp1.prefab
+  uploadId: 410586
