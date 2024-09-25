@@ -18,7 +18,6 @@ public class FieldOfView : MonoBehaviour
 
     private void Start()
     {
-        playerRef = GameObject.FindGameObjectWithTag("Player");
         StartCoroutine(FOVRoutine());
     }
 
@@ -47,7 +46,11 @@ public class FieldOfView : MonoBehaviour
                 float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
                 if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
+                { 
                     canSeePlayer = true;
+                    // Set playerRef to the target if it is a player
+                    playerRef = target.gameObject.tag == "Player" ? target.gameObject : playerRef;
+                }
                 else
                     canSeePlayer = false;
             }
@@ -57,4 +60,5 @@ public class FieldOfView : MonoBehaviour
         else if (canSeePlayer)
             canSeePlayer = false;
     }
+
 }
