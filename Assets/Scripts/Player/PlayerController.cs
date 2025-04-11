@@ -6,7 +6,6 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : NetworkBehaviour
 {
-    public LayerMask wallLayer;
     [SerializeField] private string yAxisInput = "Vertical";
     [SerializeField] private string xAxisInput = "Horizontal";
     [SerializeField] private string inputMouseX = "Mouse X";
@@ -35,9 +34,6 @@ public class PlayerController : NetworkBehaviour
     private Vector3 _inputRot;
     private Vector3 groundNormal;
 
-    private Vector3[] directions;
-    private RaycastHit[] hits;
-
     private bool onGround = false;
     private bool jumpPending = false;
     private bool ableToJump = true;
@@ -50,14 +46,6 @@ public class PlayerController : NetworkBehaviour
         // Lock cursor
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
-
-        directions = new Vector3[]
-        {
-            Vector3.right,
-            Vector3.right + Vector3.forward,
-            Vector3.left + Vector3.forward,
-            Vector3.left
-        };
     }
 
     public override void OnNetworkSpawn()
@@ -77,7 +65,6 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner || !IsSpawned) return;
         MouseLook();
         GetMovementInput();
-        CanWallRun();
     }
 
 
@@ -212,25 +199,6 @@ public class PlayerController : NetworkBehaviour
                 groundNormal = contact.normal;
                 onGround = true;
                 return;
-            }
-        }
-    }
-
-    private void CanWallRun()
-    {
-        hits = new RaycastHit[directions.Length];
-        for (int i = 0; i < directions.Length; i++)
-        {
-            Vector3 dir = transform.TransformDirection(directions[i]);
-            Physics.Raycast(transform.position, dir, out hits[i], 1f, wallLayer);
-
-            if (hits[i].collider != null)
-            {
-                Debug.DrawRay(transform.position, dir * hits[i].distance, Color.green);
-            }
-            else
-            {
-                Debug.DrawRay(transform.position, dir * 1f, Color.red);
             }
         }
     }
