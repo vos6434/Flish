@@ -34,7 +34,6 @@ public class PlayerController : NetworkBehaviour
     private Vector3 inputDir;
     private Vector3 _inputRot;
     private Vector3 groundNormal;
-    private Vector3 wallNormal;
 
     private Vector3[] directions;
     private RaycastHit[] hits;
@@ -42,8 +41,6 @@ public class PlayerController : NetworkBehaviour
     private bool onGround = false;
     private bool jumpPending = false;
     private bool ableToJump = true;
-
-    private bool isWallRunning = false;
 
     public Vector3 InputRot { get => _inputRot; }
 
@@ -101,12 +98,6 @@ public class PlayerController : NetworkBehaviour
         // We use air physics if moving upwards at high speed
         if (rampSlideLimit >= 0f && vel.y > rampSlideLimit)
             onGround = false;
-
-        if (isWallRunning)
-        {
-            rb.velocity = vel;
-            return;
-        }
 
         if (onGround) {
             // Rotate movement vector to match ground tangent
@@ -228,8 +219,6 @@ public class PlayerController : NetworkBehaviour
     private void CanWallRun()
     {
         hits = new RaycastHit[directions.Length];
-        isWallRunning = false;
-
         for (int i = 0; i < directions.Length; i++)
         {
             Vector3 dir = transform.TransformDirection(directions[i]);
@@ -238,55 +227,12 @@ public class PlayerController : NetworkBehaviour
             if (hits[i].collider != null)
             {
                 Debug.DrawRay(transform.position, dir * hits[i].distance, Color.green);
-
-                if (Vector3.Dot(hits[i].normal, Vector3.up) < 0.1f)
-                {
-                    isWallRunning = true;
-                    wallNormal = hits[i].normal;
-                    break;
-                }
             }
             else
             {
                 Debug.DrawRay(transform.position, dir * 1f, Color.red);
             }
         }
-
-        if (isWallRunning)
-        {
-            WallRun();
-        }
-    }
-
-    private void WallRun()
-    {
-        Debug.Log("WallRun function");
-
-        vel.y = 0f; //cancel gravity
-
-        // adjust velociity to move along the wall
-        Vector3 alongWall = Vector3.Cross(wallNormal, Vector3.up).normalized;
-
-        if (Vector3.Dot(alongWall, inputDir) < 0f)
-        {
-            alongWall = -alongWall; // flip direction if moving away from wall
-        }
-        vel = alongWall * groundLimit;
-        Debug.Log("Zero gravity");
-
-
-        // allow to jummp off the wall
-        if (Input.GetButtonDown(jumpButton) && ableToJump)
-        {
-            vel += wallNormal * jumpHeight; // push away from the wall
-            vel.y = jumpHeight; // add upward force
-            //onGround = false;
-            //StartCoroutine(JumpTimer());
-            isWallRunning = false; // exit wall run
-        }
-
-        //rb.AddForce(-wallNormal * 10f, ForceMode.Force); // apply force to keep player on the wall
-        rb.velocity = vel;
     }
 
     // This is for avoiding multiple consecutive jump commands before leaving ground
