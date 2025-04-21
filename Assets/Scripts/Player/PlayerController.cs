@@ -38,6 +38,12 @@ public class PlayerController : NetworkBehaviour
     private bool jumpPending = false;
     private bool ableToJump = true;
 
+    private bool jumpPressedOnce = false;
+    private float doubleTapTime = 0.5f;
+    private float lastJumpPressTime = 0f;
+
+    private bool isJetpacking = false;
+
     public Vector3 InputRot { get => _inputRot; }
 
     void Start() {
@@ -82,6 +88,12 @@ public class PlayerController : NetworkBehaviour
             Jump();
         }
 
+        if (isJetpacking && Input.GetButton(jumpButton))
+        {
+            Debug.Log("Jetpack pressed");
+            ApplyJetpackForce();
+        }
+
         // We use air physics if moving upwards at high speed
         if (rampSlideLimit >= 0f && vel.y > rampSlideLimit)
             onGround = false;
@@ -112,10 +124,38 @@ public class PlayerController : NetworkBehaviour
         inputDir = transform.rotation * new Vector3(x, 0f, z).normalized;
 
         if (Input.GetButtonDown(jumpButton))
-            jumpPending = true;
+            //jumpPending = true;
+            {
+                if (jumpPressedOnce && (Time.time - lastJumpPressTime) <= doubleTapTime)
+                {
+                    Debug.Log("pressed twice");
+                    //StartJetpack();
+                    jumpPressedOnce = false;
+                    isJetpacking = true;
+                }
+                else
+                {
+                    jumpPressedOnce = true;
+                    lastJumpPressTime = Time.time;
+                    jumpPending = true;
+                }
+
+            }
 
         if (Input.GetButtonUp(jumpButton))
             jumpPending = false;
+            //StopJetpack();
+            /*
+            if (!onGround)
+            {
+                StopJetpack();
+            }
+            */
+            if (isJetpacking && !Input.GetButton(jumpButton))
+            {
+                StopJetpack();
+                //isJetpacking = false;
+            }
     }
 
     void MouseLook() {
@@ -201,6 +241,36 @@ public class PlayerController : NetworkBehaviour
                 return;
             }
         }
+    }
+
+    private void StartJetpack()
+    {
+        if (!isJetpacking)
+        {
+            isJetpacking = true;
+            Debug.Log("Start Jetpack");
+        }
+    }
+
+    
+    private void StopJetpack()
+    {
+        if (isJetpacking)
+        {
+            isJetpacking = false;
+            Debug.Log("Disable Jetpack");
+        }
+    }
+
+    private void ApplyJetpackForce()
+    {
+        Vector3 forwardDirection = _camera.transform.TransformDirection(Vector3.forward);
+
+        Debug.Log("add force");
+        vel = new Vector3(vel.x, 0, vel.z); // reset players vertical velocity
+
+        rb.AddForce(Vector3.up * 10 , ForceMode.VelocityChange);
+        rb.AddForce(forwardDirection * 0.5f, ForceMode.VelocityChange);
     }
 
     // This is for avoiding multiple consecutive jump commands before leaving ground

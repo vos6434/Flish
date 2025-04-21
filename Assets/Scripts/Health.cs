@@ -33,7 +33,7 @@ public class Health : NetworkBehaviour
         {
             //Destroy(gameObject);
         }
-        Debug.Log("Health: " + health);
+        //Debug.Log("Health: " + health);
     }
     public override void OnNetworkSpawn()
     {
