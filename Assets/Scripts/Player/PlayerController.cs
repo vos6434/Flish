@@ -25,6 +25,10 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private bool autoJump = true;
     [SerializeField] private bool clampGroundSpeed = false;
     [SerializeField] private bool disableBunnyHopping = false;
+
+    [SerializeField] private float jetpackMaxFuel = 100f;
+    [SerializeField] private float jetpackFuelConsumption = 25f;
+
     [SerializeField] private GameObject _camera;
 
     private Rigidbody rb;
@@ -43,6 +47,9 @@ public class PlayerController : NetworkBehaviour
     private float lastJumpPressTime = 0f;
 
     private bool isJetpacking = false;
+
+    private float jetpackFuel = 100f;
+    public float JetpackFuel => jetpackFuel;
 
     public Vector3 InputRot { get => _inputRot; }
 
@@ -94,6 +101,12 @@ public class PlayerController : NetworkBehaviour
             ApplyJetpackForce();
         }
 
+        if (!isJetpacking && jetpackFuel < jetpackMaxFuel && onGround)
+        {
+            jetpackFuel += 0.5f;
+            jetpackFuel = Mathf.Clamp(jetpackFuel, 0, jetpackMaxFuel);
+        }
+
         // We use air physics if moving upwards at high speed
         if (rampSlideLimit >= 0f && vel.y > rampSlideLimit)
             onGround = false;
@@ -115,6 +128,7 @@ public class PlayerController : NetworkBehaviour
         // Reset onGround before next collision checks
         onGround = false;
         groundNormal = Vector3.zero;
+        
     }
 
     void GetMovementInput() {
@@ -126,7 +140,7 @@ public class PlayerController : NetworkBehaviour
         if (Input.GetButtonDown(jumpButton))
             //jumpPending = true;
             {
-                if (jumpPressedOnce && (Time.time - lastJumpPressTime) <= doubleTapTime)
+                if (jumpPressedOnce && (Time.time - lastJumpPressTime) <= doubleTapTime && jetpackFuel > 0f)
                 {
                     Debug.Log("pressed twice");
                     //StartJetpack();
@@ -266,11 +280,19 @@ public class PlayerController : NetworkBehaviour
     {
         Vector3 forwardDirection = _camera.transform.TransformDirection(Vector3.forward);
 
-        Debug.Log("add force");
-        vel = new Vector3(vel.x, 0, vel.z); // reset players vertical velocity
+        if (jetpackFuel > 0f)
+        {
+            Debug.Log("add force");
+            jetpackFuel -= jetpackFuelConsumption * Time.deltaTime;
+            vel = new Vector3(vel.x, 0, vel.z); // reset players vertical velocity
 
-        rb.AddForce(Vector3.up * 10 , ForceMode.VelocityChange);
-        rb.AddForce(forwardDirection * 0.5f, ForceMode.VelocityChange);
+            rb.AddForce(Vector3.up * 10 , ForceMode.VelocityChange);
+            rb.AddForce(forwardDirection * 0.5f, ForceMode.VelocityChange);
+        }
+        else if (jetpackFuel < 0f)
+        { 
+            jetpackFuel = 0f;
+        }
     }
 
     // This is for avoiding multiple consecutive jump commands before leaving ground
