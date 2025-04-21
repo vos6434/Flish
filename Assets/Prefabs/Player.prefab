@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2993698933708735668}
   - component: {fileID: -7018165928557243148}
   - component: {fileID: 931918474234413259}
+  - component: {fileID: -4833081758489438600}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -100,7 +101,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4134611191
+  GlobalObjectIdHash: 839363185
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -111,6 +112,8 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &-7018165928557243148
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -123,7 +126,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da52bf8bbc1de48cfb221a6ff30f7972, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
   AuthorityMode: 0
+  TickSyncChildren: 0
   UseUnreliableDeltas: 0
   SyncPositionX: 1
   SyncPositionY: 1
@@ -141,6 +147,7 @@ MonoBehaviour:
   UseQuaternionCompression: 0
   UseHalfFloatPrecision: 0
   InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
 --- !u!114 &931918474234413259
@@ -155,6 +162,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75155e0608df1044f8fbc02140ebe8d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   yAxisInput: Vertical
   xAxisInput: Horizontal
   inputMouseX: Mouse X
@@ -175,6 +183,23 @@ MonoBehaviour:
   clampGroundSpeed: 0
   disableBunnyHopping: 0
   _camera: {fileID: 3393448926269782975}
+--- !u!114 &-4833081758489438600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3393448925671727930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da8023e23bd1e8b4286e4d628a5ff341, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  healthText: {fileID: 0}
+  health: 0
+  maxHealth: 100
+  healthRegeneration: 5
 --- !u!1 &3393448926269782975
 GameObject:
   m_ObjectHideFlags: 0
@@ -429,3 +454,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac35373b42abe46ea8f7cab1a1c353f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
