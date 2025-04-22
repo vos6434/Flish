@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
+using System.Linq;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : NetworkBehaviour
@@ -31,6 +33,32 @@ public class PlayerController : NetworkBehaviour
 
     [SerializeField] private GameObject _camera;
 
+    [Space]
+    public Volume wallRunVolume;
+
+    public bool isGravity = false;
+
+    public float wallMaxDistance = 1f;
+    public float wallSpeedMultiplier = 1.2f;
+    public float minimumHeight = 1.2f;
+    public float maxAngleRoll = 20;
+    [Range(0.0f, 1.0f)]
+    public float normalizedAngleThreshold = 0.1f;
+    public float jumpDuration = 1;
+    public float wallBouncing = 3;
+    public float cameraTransitionDuration = 1;
+    public float wallGravityDownForce = 20f;
+    Vector3[] directions;
+    RaycastHit[] hits;
+    bool isWallRunning = false;
+    Vector3 lastWallPosition;
+    Vector3 lastWallNormal;
+    float elapsedTimeSinceJump = 0;
+    float elapsedTimeSinceWallAttach = 0;
+    float elapsedTimeSinceWallDetach = 0;
+    bool jumping;
+    float lastVolumeValue = 0;
+
     private Rigidbody rb;
 
     private Vector3 vel;
@@ -53,12 +81,32 @@ public class PlayerController : NetworkBehaviour
 
     public Vector3 InputRot { get => _inputRot; }
 
+    bool CanWallRun()
+    {
+        float verticalAxis = Input.GetAxis("Vertical");
+        return !onGround && verticalAxis > 0 && VerticalCheck();
+    }
+
+    bool VerticalCheck()
+    {
+        return !Physics.Raycast(transform.position, Vector3.down, minimumHeight);
+    }
+
     void Start() {
         rb = GetComponent<Rigidbody>();
 
         // Lock cursor
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
+
+        directions = new Vector3[]
+        {
+            Vector3.right,
+            Vector3.right + Vector3.forward,
+            Vector3.forward,
+            Vector3.left + Vector3.forward,
+            Vector3.left
+        };
     }
 
     public override void OnNetworkSpawn()
@@ -78,6 +126,8 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner || !IsSpawned) return;
         MouseLook();
         GetMovementInput();
+
+        Debug.Log(isGravity);
     }
 
 
@@ -119,8 +169,11 @@ public class PlayerController : NetworkBehaviour
             ApplyFriction();
         }
         else {
-            ApplyGravity();
             AirAccelerate();
+            if (!isWallRunning)
+            {
+                ApplyGravity();
+            }
         }
 
         rb.linearVelocity = vel;
@@ -128,7 +181,153 @@ public class PlayerController : NetworkBehaviour
         // Reset onGround before next collision checks
         onGround = false;
         groundNormal = Vector3.zero;
-        
+    }
+
+    public void LateUpdate()
+    {
+        isWallRunning = false;
+
+        if (CanAttach())
+        {
+            hits = new RaycastHit[directions.Length];
+
+            for (int i = 0; i < directions.Length; i++)
+            {
+                Vector3 dir = transform.TransformDirection(directions[i]);
+                Physics.Raycast(transform.position, dir, out hits[i], wallMaxDistance);
+                if (hits[i].collider != null)
+                {
+                    Debug.DrawRay(transform.position, dir * hits[i].distance, Color.green);
+                }
+                else
+                {
+                    Debug.DrawRay(transform.position, dir * wallMaxDistance, Color.red);
+                }
+            }
+        }
+
+        if (CanWallRun())
+        {
+            hits = hits.ToList().Where(h => h.collider !=null).OrderBy(h => h.distance).ToArray();
+            if (hits.Length > 0)
+            {
+                OnWall(hits[0]);
+                lastWallPosition = hits[0].point;
+                lastWallNormal = hits[0].normal;
+                //Debug.Log("Calculating wall running");
+            }
+            else
+            {
+                isWallRunning = false;
+            }
+        }
+
+        if (isWallRunning)
+        {
+            elapsedTimeSinceWallDetach = 0;
+            elapsedTimeSinceWallAttach += Time.deltaTime;
+            vel = new Vector3(vel.x, vel.y * wallGravityDownForce * Time.deltaTime, vel.z);
+        }
+        else
+        {
+            elapsedTimeSinceWallAttach = 0;
+            elapsedTimeSinceWallDetach += Time.deltaTime;
+        }
+
+        if (!CanWallRun() || hits.Length == 0)
+        {
+            isWallRunning = false;
+            if (lastWallNormal != Vector3.zero && elapsedTimeSinceWallDetach > 0f)
+            {
+                //Debug.Log("RESETTING WALLRUN VELOCITY");
+                //vel -= Vector3.Project(vel, lastWallNormal);
+            }
+        }
+
+    }
+
+    public Vector3 GetWallJumpDirection()
+    {
+        if (isWallRunning)
+        {
+            return lastWallNormal * wallBouncing + Vector3.up;
+        }
+        return Vector3.zero;
+    }
+    float CalculateSide()
+    {
+        if (isWallRunning)
+        {
+            Vector3 heading = lastWallPosition - transform.position;
+            Vector3 perp = Vector3.Cross(transform.forward, heading);
+            float dir = Vector3.Dot(perp, transform.up);
+            return dir;
+        }
+        return 0;
+    }
+    
+
+    bool CanAttach()
+    {
+        if (!jumpPending)
+        {
+            elapsedTimeSinceJump += Time.deltaTime;
+            if (elapsedTimeSinceJump > jumpDuration)
+            {
+                elapsedTimeSinceJump = 0;
+                jumping = false;
+                // /Debug.Log("Can attach to wall");
+            }
+            return false;
+        }
+        return true;
+    }
+
+    void OnWall(RaycastHit hit)
+    {
+        if (hit.collider.CompareTag("Wallrun"))
+        {
+
+                // Check if the wall normal is within the acceptable angle range
+                float d = Vector3.Dot(hit.normal, Vector3.up);
+                if (d >= -normalizedAngleThreshold && d <= normalizedAngleThreshold)
+                    {
+
+                        float verticalAxis = Input.GetAxis("Vertical");
+                        Vector3 alongWall = transform.TransformDirection(Vector3.forward);
+
+                        Debug.DrawRay(transform.position, alongWall.normalized * 10, Color.green);
+                        Debug.DrawRay(transform.position, lastWallNormal * 10, Color.magenta);
+
+                        Vector3 pushTowardsWall = hit.normal * -5f;
+
+                        //vel = alongWall * vel.y * wallSpeedMultiplier;
+
+                        //add velocity to player
+                        //Debug.Log("Wall running");
+                        //vel = new Vector3(vel.x, 0, vel.z); // reset players vertical velocity
+                        //rb.AddForce(alongWall * vel.y * 1, ForceMode.VelocityChange);
+                        //vel = alongWall * 25;
+                        //vel += pushTowardsWall; // add force towards wall
+                        //vel.y += 2; // reset players vertical velocity
+
+                        //rb.linearVelocity = vel;
+                        //vel = new Vector3(vel.x, vel.y*10, vel.z); // reset players vertical velocity
+                        //vel = new Vector3(vel.x, 0, vel.z);
+                        //rb.AddForce(Vector3.up * 0.065f , ForceMode.VelocityChange);
+                        //rb.AddForce(pushTowardsWall, ForceMode.VelocityChange);
+                        //rb.AddForce(alongWall * vel.y * 10f, ForceMode.VelocityChange);
+
+                        rb.linearVelocity = new Vector3(vel.x, 0, vel.z); // reset players vertical velocity
+                        rb.AddForce(Vector3.up * 0.1f);
+                        rb.AddForce(alongWall * 25, ForceMode.Acceleration);
+                        Debug.Log("Accelerating Player");
+                        isGravity = false;
+            
+
+                        isWallRunning = true;
+                    }
+        }
     }
 
     void GetMovementInput() {
@@ -244,6 +443,7 @@ public class PlayerController : NetworkBehaviour
 
     private void ApplyGravity() {
         vel.y -= gravity * Time.deltaTime;
+        isGravity = true;
     }
 
     private void OnCollisionStay(Collision other) {
