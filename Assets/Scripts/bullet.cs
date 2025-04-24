@@ -23,7 +23,7 @@ public class bullet : NetworkBehaviour
     {
         //Debug.Log("Owner: " + Owner.name);
     }
-    void OnCollisionEnter(Collision collision)
+    void OnTriggerEnter(Collider collision)
     {
         if (collision.gameObject.CompareTag("Player") && collision.gameObject != Owner)
         {
