@@ -4,59 +4,52 @@ using UnityEngine;
 public class bullet : NetworkBehaviour
 {
 
-    public float lifeTime = 5f;
-    public float damage = 10f;
-    public GameObject Owner {get; set;}
+    public float lifeTime = 5f; // Time in seconds before the bullet despawns
+    public float damage = 10f; // Damage dealt by the bullet
+    public GameObject Owner {get; set;} // The gameobject who shot the bullet
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        //Destroy(gameObject, lifeTime);
         if (IsServer)
         {
-            Invoke(nameof(DespawnBullet), lifeTime);
+            Invoke(nameof(DespawnBullet), lifeTime); // Set bullet despawn after time
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        //Debug.Log("Owner: " + Owner.name);
-    }
     void OnTriggerEnter(Collider collision)
     {
         if (!IsServer) return; // Only the server should handle collisions
 
-        if (collision.gameObject.CompareTag("Player") && collision.gameObject != Owner)
+        if (collision.gameObject.CompareTag("Player") && collision.gameObject != Owner) // Check if the collided object is a player and not the owner of the bullet
         {
-            Health playerHealth = collision.gameObject.GetComponentInParent<Health>();
-            if (playerHealth != null)
+            Health playerHealth = collision.gameObject.GetComponentInParent<Health>(); // Get the Health component of the player
+            if (playerHealth != null) // Check if the player has a healt component
             {
-                playerHealth.Damage(damage);
+                playerHealth.Damage(damage); // Damage the player
                 //Debug.Log("Target health: " + playerHealth.health.Value);
             }
-            //Destroy(gameObject);
             DespawnBullet();
         }
-        else if (collision.gameObject.CompareTag("Enemy") && collision.gameObject != Owner)
-        {
-            //Destroy(gameObject);
 
-            Health enemyHealth = collision.gameObject.GetComponentInParent<Health>();
-            if (enemyHealth != null)
+        else if (collision.gameObject.CompareTag("Enemy") && collision.gameObject != Owner) // Check if the collided object is an enemy and not the owner of the bullet
+        {
+            Health enemyHealth = collision.gameObject.GetComponentInParent<Health>(); // Get the Health component of the enemy
+            if (enemyHealth != null) // Check if the enemy has a health component
             {
-                enemyHealth.Damage(damage);
-                Debug.Log("Target health: " + enemyHealth.health.Value);
+                enemyHealth.Damage(damage); // Damage the enemy
+                //Debug.Log("Target health: " + enemyHealth.health.Value);
             }
             DespawnBullet();
         }
+
         else if (collision.gameObject != Owner)
         {
             DespawnBullet();
         }
     }
 
-    private void DespawnBullet()
+    private void DespawnBullet() // Despawn the bullet
     {
         if (IsServer)
         {

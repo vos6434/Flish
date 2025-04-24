@@ -4,31 +4,24 @@ using UnityEngine.UI;
 
 public class Speedometer : MonoBehaviour
 {
-    [SerializeField] private Rigidbody rb;
-    private Text text;
+    [SerializeField] private Rigidbody rb; // Riigidbody component
+    private Text text; // Text component
 
-    private void Start() {
+    private void Start()
+    {
         text = GetComponent<Text>();   
-        /*
-        if (NetworkManager.Singleton.ConnectedClients.ContainsKey(NetworkManager.Singleton.LocalClientId))
-            text = NetworkManager.Singleton.ConnectedClients[NetworkManager.Singleton.LocalClientId].PlayerObject.GetComponent<Text>();
-
-        */
-        //text = NetworkManager.Singleton.ConnectedClients[NetworkManager.Singleton.LocalClientId].PlayerObject.GetComponent<Text>();
     }
 
     private void LateUpdate() {
 
-        if (NetworkManager.Singleton.ConnectedClients.ContainsKey(NetworkManager.Singleton.LocalClientId))
-            rb = NetworkManager.Singleton.ConnectedClients[NetworkManager.Singleton.LocalClientId].PlayerObject.GetComponent<Rigidbody>();
+        if (NetworkManager.Singleton.ConnectedClients.ContainsKey(NetworkManager.Singleton.LocalClientId)) // Check if the client is connected
+            rb = NetworkManager.Singleton.ConnectedClients[NetworkManager.Singleton.LocalClientId].PlayerObject.GetComponent<Rigidbody>(); // Get the Rigidbody component of the local player object
         else
             return;
 
-        //rb = NetworkManager.Singleton.ConnectedClients[NetworkManager.Singleton.LocalClientId].PlayerObject.GetComponent<Rigidbody>();
+        Vector3 hVel = rb.linearVelocity; // Get the linear velocity of the Rigidbody
+        hVel.y = 0; // set the y velocity to 0
 
-        Vector3 hVel = rb.linearVelocity;
-        hVel.y = 0;
-
-        text.text = hVel.magnitude.ToString("0.0");
+        text.text = hVel.magnitude.ToString("0.0"); // Set the text to the magnitude of the velocity
     }
 }

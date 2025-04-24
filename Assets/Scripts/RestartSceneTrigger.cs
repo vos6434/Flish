@@ -4,7 +4,8 @@ using UnityEngine.SceneManagement;
 
 public class RestartSceneTrigger : NetworkBehaviour
 {
-    private void OnTriggerEnter(Collider other) {
-        NetworkManager.Singleton.ConnectedClients[NetworkManager.Singleton.LocalClientId].PlayerObject.GetComponent<PlayerController>().transform.position = new Vector3(0, 2, 0);
+    private void OnTriggerEnter(Collider other) // When trigger collider is entered
+    {
+        NetworkManager.Singleton.ConnectedClients[NetworkManager.Singleton.LocalClientId].PlayerObject.GetComponent<PlayerController>().transform.position = new Vector3(0, 2, 0); // Teleport player to given position
     }
 }
