@@ -168,6 +168,7 @@ MonoBehaviour:
   inputMouseX: Mouse X
   inputMouseY: Mouse Y
   jumpButton: Jump
+  fireButton: Attack
   mouseSensitivity: 1
   groundAcceleration: 100
   airAcceleration: 100
@@ -182,7 +183,23 @@ MonoBehaviour:
   autoJump: 1
   clampGroundSpeed: 0
   disableBunnyHopping: 0
+  jetpackMaxFuel: 100
+  jetpackFuelConsumption: 25
   _camera: {fileID: 3393448926269782975}
+  projectilePrefab: {fileID: 2805051224236544870, guid: 4ca34d5170cf7534e8004e6021ac5540, type: 3}
+  projectileSpawnPoint: {fileID: 0}
+  projectileSpeed: 10
+  wallRunVolume: {fileID: 0}
+  isGravity: 0
+  wallMaxDistance: 1
+  wallSpeedMultiplier: 1.2
+  minimumHeight: 1.2
+  maxAngleRoll: 20
+  normalizedAngleThreshold: 0.1
+  jumpDuration: 1
+  wallBouncing: 3
+  cameraTransitionDuration: 1
+  wallGravityDownForce: 20
 --- !u!114 &-4833081758489438600
 MonoBehaviour:
   m_ObjectHideFlags: 0

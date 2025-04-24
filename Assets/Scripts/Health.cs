@@ -32,6 +32,8 @@ public class Health : NetworkBehaviour
         if (health <= 0)
         {
             //Destroy(gameObject);
+            // respawn player
+            GetComponent<NetworkObject>().Despawn();
         }
         //Debug.Log("Health: " + health);
     }

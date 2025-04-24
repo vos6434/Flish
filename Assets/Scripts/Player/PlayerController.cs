@@ -13,6 +13,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private string inputMouseX = "Mouse X";
     [SerializeField] private string inputMouseY = "Mouse Y";
     [SerializeField] private string jumpButton = "Jump";
+    [SerializeField] private string fireButton = "Fire1";
     [SerializeField] private float mouseSensitivity = 1f;
     [SerializeField] private float groundAcceleration = 100f;
     [SerializeField] private float airAcceleration = 100f;
@@ -32,6 +33,10 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float jetpackFuelConsumption = 25f;
 
     [SerializeField] private GameObject _camera;
+
+    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private Transform projectileSpawnPoint;
+    [SerializeField] private float projectileSpeed = 10f;
 
     [Space]
     public Volume wallRunVolume;
@@ -127,7 +132,7 @@ public class PlayerController : NetworkBehaviour
         MouseLook();
         GetMovementInput();
 
-        Debug.Log(isGravity);
+        //Debug.Log(isGravity);
     }
 
 
@@ -369,6 +374,12 @@ public class PlayerController : NetworkBehaviour
                 StopJetpack();
                 //isJetpacking = false;
             }
+
+        if (Input.GetButtonDown("Fire1"))
+        {
+            Debug.Log("Fire pressed");
+            FireProjectileServerRpc();
+        }
     }
 
     void MouseLook() {
@@ -500,5 +511,28 @@ public class PlayerController : NetworkBehaviour
         ableToJump = false;
         yield return new WaitForSeconds(0.1f);
         ableToJump = true;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void FireProjectileServerRpc()
+    {
+        if (projectilePrefab != null)
+        {
+            Vector3 spawnPosition = _camera.transform.position + _camera.transform.forward * 0.7f; // Adjust spawn position as needed
+            GameObject projectile = Instantiate(projectilePrefab, spawnPosition, _camera.transform.rotation);
+            //projectile.GetComponent<bullet>().parent = gameObject; // Set the parent of the bullet to the player
+
+            //projectile.transform.SetParent(transform);
+            projectile.GetComponent<bullet>().Owner = gameObject;
+
+            projectile.GetComponent<NetworkObject>().Spawn(); // Spawn the projectile on the network
+
+            Rigidbody projectilerb = projectile.GetComponent<Rigidbody>();
+            if (projectilerb != null)
+            {
+                projectilerb.AddForce(_camera.transform.forward * projectileSpeed, ForceMode.VelocityChange); // Add force to the projectile
+                //projectilerb.linearVelocity = _camera.transform.forward * projectileSpeed; // Set the projectile's velocity directly
+            }
+        }
     }
 }
