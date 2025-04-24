@@ -245,15 +245,6 @@ public class PlayerController : NetworkBehaviour
 
     }
 
-    public Vector3 GetWallJumpDirection() // Calculate the direction for a wall jump
-    {
-        if (isWallRunning) // If player is wall running
-        {
-            return lastWallNormal * wallBouncing + Vector3.up; // Calculate the wall jump direction based on the last wall normal and add an upward force
-        }
-        return Vector3.zero; // If the player is not wall running, return a zero vector
-    }
-
     bool CanAttach() // Check if the player can attach to a wall
     {
         if (!jumpPending) // Check if player is not pending a jump
@@ -412,8 +403,6 @@ public class PlayerController : NetworkBehaviour
         StartCoroutine(JumpTimer()); // Delay the player from jumping again too quickly
     }
 
-    
-
     private void ApplyGravity() // Handle gravity for the player
     {
         vel.y -= gravity * Time.deltaTime; // Apply gravity to the player velocity
@@ -431,16 +420,6 @@ public class PlayerController : NetworkBehaviour
             }
         }
     }
-
-    private void StartJetpack() // Start the jetpack
-    {
-        if (!isJetpacking)
-        {
-            isJetpacking = true;
-            //Debug.Log("Start Jetpack");
-        }
-    }
-
     
     private void StopJetpack() // Stop the jetpack
     {
