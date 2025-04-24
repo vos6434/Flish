@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class ShootPlayer : MonoBehaviour
@@ -29,31 +30,31 @@ public class ShootPlayer : MonoBehaviour
         if (fieldOfView.canSeePlayer)
         {
             playerTransform = fieldOfView.playerRef.transform;
-            Shoot();
+            ShootRpc();
         }
         damageCooldown -= Time.deltaTime; // Decrease cooldown timer
     }
-    private void Shoot()
+    
+    [ServerRpc]
+    private void ShootRpc()
     {
-        Debug.Log("Shooting at player: " + playerTransform.name);
+        if (playerTransform == null) return; // Check if playerTransform is null
 
-        Health playerHealth = playerTransform.GetComponentInParent<Health>();
-        if (playerHealth == null)
+        if (damageCooldown <= 0f)
         {
-            playerHealth = playerTransform.GetComponent<Health>();
-            //Debug.Log("Player health component not found in parent, checking player object directly.");
-        }
-        if (playerHealth != null)
-        {
-            if (damageCooldown <= 0f)
+            GameObject bullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
+            bullet.GetComponent<bullet>().Owner = gameObject;
+            bullet.GetComponent<NetworkObject>().Spawn();
+
+            Rigidbody bulletRb = bullet.GetComponent<Rigidbody>();
+            if (bulletRb != null)
             {
-            playerHealth.Damage(10f); // Adjust the damage value as needed
-            Debug.Log("DAMAGING PLAYER");
-            damageCooldown = 1f; // Reset cooldown
+                Vector3 direction = (playerTransform.position - bulletSpawnPoint.position).normalized;
+                bulletRb.AddForce(direction * 10f, ForceMode.Impulse); // Adjust the force as needed
             }
+            
+            damageCooldown = 1f / damageRate; // Reset cooldown timer
         }
-        
-        
     }
 
     private void OggerEnter(Collider other)
@@ -62,7 +63,7 @@ public class ShootPlayer : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerTransform = other.transform;
-            Shoot();
+            ShootRpc();
         }
     }
 }
