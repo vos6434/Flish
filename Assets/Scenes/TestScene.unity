@@ -1575,6 +1575,24 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 2
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1119701742
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1119701715}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da8023e23bd1e8b4286e4d628a5ff341, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  healthText: {fileID: 0}
+  health:
+    m_InternalValue: 100
+  maxHealth: 100
+  healthRegeneration: 5
 --- !u!1001 &1251242150
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1664,6 +1682,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3393448925671727930, guid: af203a9b3f9851844b516f1633141c01, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1119701733}
+    - targetCorrespondingSourceObject: {fileID: 3393448925671727930, guid: af203a9b3f9851844b516f1633141c01, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1119701742}
   m_SourcePrefab: {fileID: 100100000, guid: af203a9b3f9851844b516f1633141c01, type: 3}
 --- !u!1 &1286900395
 GameObject:

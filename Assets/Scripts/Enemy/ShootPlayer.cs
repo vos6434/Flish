@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class ShootPlayer : MonoBehaviour
+public class ShootPlayer : NetworkBehaviour
 {
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private Transform bulletSpawnPoint;
@@ -30,14 +30,16 @@ public class ShootPlayer : MonoBehaviour
         if (fieldOfView.canSeePlayer)
         {
             playerTransform = fieldOfView.playerRef.transform;
-            ShootRpc();
+            ShootServerRpc();
         }
         damageCooldown -= Time.deltaTime; // Decrease cooldown timer
     }
-    
-    [ServerRpc]
-    private void ShootRpc()
+
+    [ServerRpc(RequireOwnership = false)]
+    private void ShootServerRpc()
     {
+        if (!IsServer) return;
+
         if (playerTransform == null) return; // Check if playerTransform is null
 
         if (damageCooldown <= 0f)
@@ -63,7 +65,7 @@ public class ShootPlayer : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerTransform = other.transform;
-            ShootRpc();
+            ShootServerRpc();
         }
     }
 }

@@ -39,7 +39,12 @@ public class Health : NetworkBehaviour
         {
             //Destroy(gameObject);
             // respawn player
-            
+            Debug.Log(gameObject.name + " is dead!");
+
+            if (gameObject.CompareTag("Enemy"))
+            {
+                GetComponent<NetworkObject>().Despawn(); // Despawn the enemy object
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.L))

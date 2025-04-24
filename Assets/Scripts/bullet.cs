@@ -27,7 +27,7 @@ public class bullet : NetworkBehaviour
     {
         if (!IsServer) return; // Only the server should handle collisions
 
-        if (collision.gameObject.CompareTag("Player"))
+        if (collision.gameObject.CompareTag("Player") && collision.gameObject != Owner)
         {
             Health playerHealth = collision.gameObject.GetComponentInParent<Health>();
             if (playerHealth != null)
@@ -41,6 +41,13 @@ public class bullet : NetworkBehaviour
         else if (collision.gameObject.CompareTag("Enemy") && collision.gameObject != Owner)
         {
             //Destroy(gameObject);
+
+            Health enemyHealth = collision.gameObject.GetComponentInParent<Health>();
+            if (enemyHealth != null)
+            {
+                enemyHealth.Damage(damage);
+                Debug.Log("Target health: " + enemyHealth.health.Value);
+            }
             DespawnBullet();
         }
         else if (collision.gameObject != Owner)
