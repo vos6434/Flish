@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Wallrun
   - Enemy
+  - SpawnPoint
   layers:
   - Default
   - TransparentFX

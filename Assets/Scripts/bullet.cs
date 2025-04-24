@@ -33,7 +33,7 @@ public class bullet : NetworkBehaviour
             if (playerHealth != null)
             {
                 playerHealth.Damage(damage);
-                Debug.Log("Target health: " + playerHealth.health.Value);
+                //Debug.Log("Target health: " + playerHealth.health.Value);
             }
             //Destroy(gameObject);
             DespawnBullet();

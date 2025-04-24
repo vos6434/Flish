@@ -1,3 +1,4 @@
+using Unity.Netcode.Components;
 using Unity.Netcode;
 using UnityEngine.UI;
 using UnityEngine;
@@ -19,11 +20,7 @@ public class Health : NetworkBehaviour
     private float RegenerationTimer = 0f;
     private float lastDamageTime;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public Transform spawnPoint; // Reference to the spawn point
 
     // Update is called once per frame
     void Update()
@@ -39,11 +36,26 @@ public class Health : NetworkBehaviour
         {
             //Destroy(gameObject);
             // respawn player
-            Debug.Log(gameObject.name + " is dead!");
+            //Debug.Log(gameObject.name + " is dead!");
 
             if (gameObject.CompareTag("Enemy"))
             {
                 GetComponent<NetworkObject>().Despawn(); // Despawn the enemy object
+            }
+            else if (NetworkObject.CompareTag("Player"))
+            {
+                Debug.Log(gameObject.name + " is dead!");
+                if (spawnPoint != null)
+                {
+                    //NetworkObject.transform.position = spawnPoint.position; // Move player to spawn point
+                    health.Value = maxHealth; // Reset health to maxHealth
+                    Debug.Log("Sending Teleport RPC to client.");
+                    TeleportClientRpc(spawnPoint.position);
+                }
+                else
+                {
+                    Debug.LogError("Spawn point not assigned for player respawn.");
+                }
             }
         }
 
@@ -54,6 +66,7 @@ public class Health : NetworkBehaviour
         
 
         //Debug.Log("Health: " + health);
+        
     }
 
     
@@ -62,6 +75,18 @@ public class Health : NetworkBehaviour
         if (IsServer)
         {
             health.Value = maxHealth;
+            if (spawnPoint == null)
+            {
+                GameObject spawnPointObject = GameObject.FindGameObjectWithTag("SpawnPoint");
+                if (spawnPointObject != null)
+                {
+                    spawnPoint = spawnPointObject.transform;
+                }
+                else
+                {
+                    Debug.LogError("Spawn point not found. Please assign a spawn point in the inspector.");
+                }
+            }
         }
     }
     
@@ -124,6 +149,22 @@ public class Health : NetworkBehaviour
                     RegenerationTimer = 0f; // Reset the timer after each regeneration tick
                 }
             }
+        }    
+    }
+
+    [ClientRpc(Delivery = RpcDelivery.Reliable)]
+    private void TeleportClientRpc(Vector3 newPosition)
+    {
+        Debug.Log($"Server teleporting {gameObject.name} to position");
+        var networkTransform = GetComponent<NetworkTransform>();
+        if (networkTransform != null)
+        {
+            networkTransform.SetState(newPosition, Quaternion.identity, transform.localScale, true);
+        }
+        else
+        {
+            // Fallback if NetworkTransform is not present
+            transform.position = newPosition;
         }
     }
 }
