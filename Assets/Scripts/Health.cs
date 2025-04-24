@@ -6,7 +6,13 @@ public class Health : NetworkBehaviour
 {
 
     public Text healthText;
-    public float health;
+    //public float health;
+    public NetworkVariable<float> health = new NetworkVariable<float>
+    (
+        100f, // Default value
+        NetworkVariableReadPermission.Everyone, // All clients can read
+        NetworkVariableWritePermission.Server // Only the server can write
+    );
     public float maxHealth = 100f;
     public float healthRegeneration = 5f;
     private bool isRegenerating = false;
@@ -22,44 +28,78 @@ public class Health : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!IsOwner) return; // Only the owner should update health
+        if (!IsServer) return; // Only the owner should update health
         if (healthText != null)
         {
-            healthText.text = "Health: " + health + "%";
+            healthText.text = "Health: " + health.Value + "%";
         }
-        if (health > maxHealth) health = maxHealth;
+        if (health.Value > maxHealth) health.Value = maxHealth;
 
-        if (health <= 0)
+        if (health.Value <= 0)
         {
             //Destroy(gameObject);
             // respawn player
-            GetComponent<NetworkObject>().Despawn();
+            
         }
+
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            LogAllPlayersHealth();
+        }
+        
+
         //Debug.Log("Health: " + health);
     }
+
+    
     public override void OnNetworkSpawn()
     {
-        if (IsOwner)
+        if (IsServer)
         {
-            health = maxHealth;
+            health.Value = maxHealth;
         }
     }
+    
+
+        public static void LogAllPlayersHealth()
+    {
+        if (NetworkManager.Singleton.IsServer)
+        {
+            foreach (var client in NetworkManager.Singleton.ConnectedClients.Values)
+            {
+                var playerHealth = client.PlayerObject.GetComponent<Health>();
+                if (playerHealth != null)
+                {
+                    Debug.Log($"Player {client.ClientId} Health: {playerHealth.health.Value}");
+                }
+                else
+                {
+                    Debug.Log($"Player {client.ClientId} has no Health component.");
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("Only the server can log all players' health.");
+        }
+    }
+
     public void Damage(float amount)
     {
-        if (IsOwner)
+        if (IsServer)
         {
-            health -= amount;
+            health.Value -= amount;
             isRegenerating = false;
             RegenerationTimer = 0f; // Reset the regeneration timer when taking damage
         }
     }
     public void Heal(float amount)
     {
-        if (IsOwner)
+        if (IsServer)
         {
-            if (health < maxHealth) // Prevent healing if already at max health
+            if (health.Value < maxHealth) // Prevent healing if already at max health
             {
-                health += amount;
+                health.Value += amount;
                 isRegenerating = false;
                 RegenerationTimer = 0f; // Reset the regeneration timer when healing
             }
@@ -68,7 +108,7 @@ public class Health : NetworkBehaviour
     }
     public void StartRegeneration(float delay)
     {
-        if (IsOwner)
+        if (IsServer)
         {
             if (isRegenerating == true && Time.time >= lastDamageTime + delay)
             {

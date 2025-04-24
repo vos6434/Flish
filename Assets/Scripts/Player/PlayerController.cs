@@ -377,7 +377,6 @@ public class PlayerController : NetworkBehaviour
 
         if (Input.GetButtonDown("Fire1"))
         {
-            Debug.Log("Fire pressed");
             FireProjectileServerRpc();
         }
     }

@@ -14,12 +14,12 @@ public class Healthmeter : MonoBehaviour
     }
 
     // Update is called once per frame
-    private void LateUpdate()
+    private void Update()
     {
         if (NetworkManager.Singleton.ConnectedClients.ContainsKey(NetworkManager.Singleton.LocalClientId))
             health = NetworkManager.Singleton.ConnectedClients[NetworkManager.Singleton.LocalClientId].PlayerObject.GetComponent<Health>();
         else
             return;
-        text.text = $"Health: {health.health.ToString("0")}"; 
+        text.text = $"Health: {health.health.Value.ToString("")}";
     }
 }

@@ -1639,6 +1639,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3393448925671727930, guid: af203a9b3f9851844b516f1633141c01, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
     - target: {fileID: 5363425037728827674, guid: af203a9b3f9851844b516f1633141c01, type: 3}
       propertyPath: radius
       value: 10

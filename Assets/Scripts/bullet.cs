@@ -25,12 +25,15 @@ public class bullet : NetworkBehaviour
     }
     void OnTriggerEnter(Collider collision)
     {
-        if (collision.gameObject.CompareTag("Player") && collision.gameObject != Owner)
+        if (!IsServer) return; // Only the server should handle collisions
+
+        if (collision.gameObject.CompareTag("Player"))
         {
             Health playerHealth = collision.gameObject.GetComponentInParent<Health>();
             if (playerHealth != null)
             {
                 playerHealth.Damage(damage);
+                Debug.Log("Target health: " + playerHealth.health.Value);
             }
             //Destroy(gameObject);
             DespawnBullet();
